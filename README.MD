@@ -49,7 +49,7 @@ This is still an early stage of development, things can change heavily in the fu
 
 ## TODO:
 
--   Add Getting Started to README
--   DocStrings, which are explaining something [x]
--   logging [-]
--   Unit-Tests [x]
+* [ ] Add Getting Started to README
+* [ ] DocStrings, which are explaining something
+* [ ] logging
+* [ ] Unit-Tests

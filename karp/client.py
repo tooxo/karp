@@ -13,21 +13,22 @@ class PendingRequest:
     """
     PendingRequest
     """
+
     def __init__(self) -> None:
         self.response: Optional[Response] = None
         self.event = asyncio.Event()
 
     async def process(self, timeout: Optional[float] = None) -> Response:
         """
-
+        Wait for the request to be finished.
         :return:
         """
         await asyncio.wait_for(self.event.wait(), timeout)
         return self.response
 
-    def complete(self, response: Response):
+    def complete(self, response: Response) -> None:
         """
-
+        Complete the pending request.
         :param response:
         :return:
         """
@@ -74,7 +75,7 @@ class KARPClient(object):
 
     async def open(self) -> asyncio.Future:
         """
-
+        Open the connection
         :return:
         """
 

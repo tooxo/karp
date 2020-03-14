@@ -37,7 +37,7 @@ class Response(object):
     def parse(cls, raw_bytes: bytes):
         """
         Parse raw bytes
-        :param raw_bytes:
+        :param raw_bytes: raw bytes
         :return:
         """
         if not raw_bytes:
@@ -55,9 +55,9 @@ class Response(object):
     def create(cls, request_id: str, data: str, successful: bool):
         """
         Create request
-        :param request_id:
-        :param data:
-        :param successful:
+        :param request_id: request id
+        :param data: data
+        :param successful: check if the request was successful
         :return:
         """
         b64_e = base64.b64encode(data.encode()).decode()
@@ -91,21 +91,21 @@ class Response(object):
     @property
     def request_id(self) -> str:
         """
-        req id
+        Request Id
         :return:
         """
         return self._request_id
 
     def __bytes__(self) -> bytes:
         """
-        tobytes
+        Response as bytes
         :return:
         """
         return f"KARP_HEAD1{int(self.successful)}{self.request_id}C_LEN{self.content_length}KARP_DATA{self._b64_data}KARP_END\n".encode()
 
     def to_bytes(self) -> bytes:
         """
-        sadjsapoijd
+        Response as bytes
         :return:
         """
         return bytes(self)

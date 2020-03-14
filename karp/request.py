@@ -20,7 +20,9 @@ class Request(object):
     Request
     """
 
-    VALID_REQUEST_REGEX = r"KARP_HEAD([A-z]+)0([01])([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]+)KARP_END"
+    VALID_REQUEST_REGEX = re.compile(
+        r"KARP_HEAD([A-z]+)0([01])([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]+)KARP_END"
+    )
 
     def __init__(
         self, route: str, request_id: str, b64_data: str, response: bool
@@ -36,7 +38,7 @@ class Request(object):
     @classmethod
     def parse(cls, raw_data: bytes):
         """
-        parse a request from raw
+        parse a request from raw bytes
         :param raw_data:
         :return:
         """
@@ -58,7 +60,7 @@ class Request(object):
     @staticmethod
     def generate_id() -> str:
         """
-        Generate id
+        Generate a 16 character unique id
         :return:
         """
         chars = list("0123456789")
@@ -70,10 +72,10 @@ class Request(object):
     @classmethod
     def create(cls, route: str, data: str, response: bool = True):
         """
-        Create request
-        :param route:
-        :param data:
-        :param response:
+        Create new request
+        :param route: route to connect to
+        :param data: data to send
+        :param response: response
         :return:
         """
         b64_e = base64.b64encode(data.encode()).decode()
@@ -115,7 +117,7 @@ class Request(object):
     @property
     def request_id(self) -> str:
         """
-        req id
+        Request Id
         :return:
         """
         return self._request_id
@@ -123,21 +125,24 @@ class Request(object):
     @property
     def response(self) -> bool:
         """
-
+        Response
         :return:
         """
         return self._response
 
     def __bytes__(self) -> bytes:
         """
-        tobytes
+        Request as bytes
         :return:
         """
-        return f"KARP_HEAD{self.route}0{int(self._response)}{self.request_id}C_LEN{self.content_length}KARP_DATA{self.b64_data}KARP_END\n".encode()
+        return (
+            f"KARP_HEAD{self.route}0{int(self._response)}{self.request_id}C_LEN{self.content_length}"
+            f"KARP_DATA{self.b64_data}KARP_END\n".encode()
+        )
 
     def to_bytes(self) -> bytes:
         """
-        sadjsapoijd
+        Request as bytes
         :return:
         """
         return bytes(self)
