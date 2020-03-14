@@ -1,15 +1,26 @@
 import asyncio
+import logging
+import time
+
+from karp.request import Request
 from karp.server import KARPServer
-from karp.response import Response
 
 k = KARPServer("0.0.0.0", "9977")
 
-
-def test(response: Response):
-    return response.request_id
+logging.getLogger("karp").setLevel(logging.INFO)
 
 
-k.add_route(test, "test")
+@k.add_route(route="test")
+def error(request: Request):
+    raise Exception("shit")
 
 
-asyncio.run(k.start())
+@k.add_route(route="echo")
+def echo(request: Request):
+    return request.text
+
+
+try:
+    asyncio.run(k.start())
+except KeyboardInterrupt:
+    del k

@@ -2,9 +2,9 @@
 Request
 """
 
-import re
 import base64
 import random
+import re
 
 
 class InvalidRequestException(Exception):
@@ -20,12 +20,15 @@ class Request(object):
     Request
     """
 
-    VALID_REQUEST_REGEX = r"KARP_HEAD([A-z]+)0([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]+)KARP_END"
+    VALID_REQUEST_REGEX = r"KARP_HEAD([A-z]+)0([01])([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]+)KARP_END"
 
-    def __init__(self, route: str, request_id: str, b64_data: str) -> None:
+    def __init__(
+        self, route: str, request_id: str, b64_data: str, response: bool
+    ) -> None:
         self._route = route.lower()
         self._request_id: str = request_id
         self._content_length: int = len(b64_data)
+        self._response: bool = response
         self.b64_data: str = b64_data
 
         self._text: str = base64.b64decode(self.b64_data.encode()).decode()
@@ -37,12 +40,16 @@ class Request(object):
         :param raw_data:
         :return:
         """
-        print(raw_data)
         match = re.match(Request.VALID_REQUEST_REGEX, raw_data.decode("UTF-8"))
         if not match:
             raise InvalidRequestException()
 
-        self = cls(match.group(1), match.group(2), match.group(4))
+        self = cls(
+            match.group(1),
+            match.group(3),
+            match.group(5),
+            match.group(2) == "1",
+        )
 
         if not len(self.b64_data) == self._content_length:
             raise InvalidRequestException("Invalid Content_Length")
@@ -61,15 +68,16 @@ class Request(object):
         return s
 
     @classmethod
-    def create(cls, route: str, data: str):
+    def create(cls, route: str, data: str, response: bool = True):
         """
         Create request
         :param route:
         :param data:
+        :param response:
         :return:
         """
         b64_e = base64.b64encode(data.encode()).decode()
-        self = cls(route, Request.generate_id(), b64_e)
+        self = cls(route, Request.generate_id(), b64_e, response)
         return self
 
     @property
@@ -112,13 +120,20 @@ class Request(object):
         """
         return self._request_id
 
+    @property
+    def response(self) -> bool:
+        """
+
+        :return:
+        """
+        return self._response
+
     def __bytes__(self) -> bytes:
         """
         tobytes
         :return:
         """
-        return f"KARP_HEAD{self.route}0{self.request_id}C_LEN{self.content_length}KARP_DATA{self.b64_data}KARP_END\n"\
-            .encode()
+        return f"KARP_HEAD{self.route}0{int(self._response)}{self.request_id}C_LEN{self.content_length}KARP_DATA{self.b64_data}KARP_END\n".encode()
 
     def to_bytes(self) -> bytes:
         """
@@ -126,3 +141,6 @@ class Request(object):
         :return:
         """
         return bytes(self)
+
+    def __str__(self) -> str:
+        return str(self.__dict__)
