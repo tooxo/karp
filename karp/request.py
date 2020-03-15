@@ -21,7 +21,7 @@ class Request(object):
     """
 
     VALID_REQUEST_REGEX = re.compile(
-        r"KARP_HEAD([A-z]+)0([01])([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]+)KARP_END"
+        r"KARP_HEAD([A-z]+)0([01])([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]*)KARP_END"
     )
 
     def __init__(

@@ -12,11 +12,12 @@ logging.getLogger("karp").setLevel(logging.INFO)
 
 @k.add_route(route="test")
 def error(request: Request):
-    raise Exception("shit")
+    return "this is america"
 
 
 @k.add_route(route="echo")
 def echo(request: Request):
+
     return request.text
 
 

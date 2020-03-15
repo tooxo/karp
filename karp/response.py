@@ -20,7 +20,7 @@ class Response(object):
     """
 
     RESPONSE_VALID_REGEX = re.compile(
-        r"KARP_HEAD1([01])([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]+)KARP_END"
+        r"KARP_HEAD1([01])([0-9]{16})C_LEN([0-9]+)KARP_DATA([A-z0-9/+=]*)KARP_END"
     )
 
     def __init__(

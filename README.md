@@ -1,5 +1,8 @@
 # KeepAliveRequestProtocol
 
+[![PiPy](https://img.shields.io/pypi/v/karp?style=flat-square)](https://pypi.org/project/karp/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+
 A mix-in protocol between http and websocket. It combines the route-based navigation of http with the 
 streamed aspects of websockets.
 
@@ -50,6 +53,4 @@ This is still an early stage of development, things can change heavily in the fu
 ## TODO:
 
 * [ ] Add Getting Started to README
-* [ ] DocStrings, which are explaining something
-* [ ] logging
 * [ ] Unit-Tests

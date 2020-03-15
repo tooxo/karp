@@ -3,37 +3,13 @@ Client
 """
 import asyncio
 import traceback
-from typing import Dict, Optional
+from concurrent.futures.thread import ThreadPoolExecutor
+from typing import Dict, Optional, Callable
 
+import karp.utils as utils
 from karp.request import Request
 from karp.response import InvalidResponseException, Response
-
-
-class PendingRequest:
-    """
-    PendingRequest
-    """
-
-    def __init__(self) -> None:
-        self.response: Optional[Response] = None
-        self.event = asyncio.Event()
-
-    async def process(self, timeout: Optional[float] = None) -> Response:
-        """
-        Wait for the request to be finished.
-        :return:
-        """
-        await asyncio.wait_for(self.event.wait(), timeout)
-        return self.response
-
-    def complete(self, response: Response) -> None:
-        """
-        Complete the pending request.
-        :param response:
-        :return:
-        """
-        self.response = response
-        self.event.set()
+from karp.server import InvalidRouteNameException
 
 
 class KARPClient(object):
@@ -53,7 +29,46 @@ class KARPClient(object):
         self.reader: Optional[asyncio.StreamReader] = None
         self.writer: Optional[asyncio.StreamWriter] = None
 
-        self._requests: Dict[str, PendingRequest] = {}
+        self.executor = ThreadPoolExecutor(max_workers=5)
+
+        self.routes: dict = {}
+
+        self._requests: Dict[str, utils.PendingRequest] = {}
+
+    async def _create_response(self, request: bytes) -> bytes:
+        if not request:
+            return b""
+        req: Request = Request.parse(request)
+        try:
+            func = self.routes[req.route]
+            if asyncio.iscoroutinefunction(func):
+                response_data = await func(req)
+            else:
+                response_data = await asyncio.get_event_loop().run_in_executor(
+                    self.executor, self.routes[req.route], req
+                )
+            successful = True
+        except Exception as e:
+            response_data = e.__str__()
+            successful = False
+        if req.response:
+            res = Response.create(req.request_id, response_data, successful)
+            return res.to_bytes()
+        return b""
+
+    async def _handle(self, response) -> None:
+        try:
+            r = utils.Utils.create_interaction_object(response)
+            if isinstance(r, Request):
+                res: bytes = await self._create_response(bytes(r))
+                if res:
+                    self.writer.write(res)
+                    await self.writer.drain()
+            else:
+                if r.request_id in self._requests:
+                    self._requests[r.request_id].complete(r)
+        except InvalidResponseException:
+            traceback.print_exc()
 
     async def _read(self) -> None:
         while True:
@@ -65,13 +80,23 @@ class KARPClient(object):
                 break
 
             for response in responses.decode().split("\n"):
-                try:
-                    res = Response.parse(bytes(response, "UTF-8"))
-                    if res:
-                        if res.request_id in self._requests:
-                            self._requests[res.request_id].complete(res)
-                except InvalidResponseException:
-                    traceback.print_exc()
+                if response:
+                    asyncio.ensure_future(self._handle(response))
+
+    def add_route(self, **kwargs) -> Callable:
+        """
+        adds a route
+        :return:
+        """
+
+        if "route" not in kwargs:
+            raise InvalidRouteNameException("No route name provided.")
+
+        def _wrapper(func: Callable) -> Callable:
+            self.routes[kwargs["route"]] = func
+            return func
+
+        return _wrapper
 
     async def open(self) -> asyncio.Future:
         """
@@ -97,7 +122,7 @@ class KARPClient(object):
         req = Request.create(route, request_data)
 
         self.writer.write(req.to_bytes())
-        self._requests[req.request_id] = PendingRequest()
+        self._requests[req.request_id] = utils.PendingRequest()
 
         await self.writer.drain()
 
