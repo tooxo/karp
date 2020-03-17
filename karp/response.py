@@ -60,7 +60,10 @@ class Response(object):
         :param successful: check if the request was successful
         :return:
         """
-        b64_e = base64.b64encode(data.encode()).decode()
+        if data:
+            b64_e = base64.b64encode(data.encode()).decode()
+        else:
+            b64_e = ""
         self = cls(request_id, b64_e, successful)
         return self
 

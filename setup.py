@@ -1,3 +1,6 @@
+"""
+Setup
+"""
 from setuptools import find_packages, setup
 
 with open("README.md", "r") as f:
@@ -5,7 +8,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="karp",
-    version="0.0.2",
+    version="0.0.8",
     packages=find_packages(),
     url="https://github.com/tooxo/karp",
     license="None",

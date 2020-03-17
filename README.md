@@ -9,6 +9,21 @@ streamed aspects of websockets.
 This is still an early stage of development, things can change heavily in the future.
 
 
+## Requirements
+`Python3.6+`
+
+## Installation
+
+#### Pip:
+`pip install karp`
+
+#### From Source:
+```shell script
+git clone --depth=1 https://github.com/tooxo/karp
+cd karp/
+pip install .
+```
+
 ## Protocol Definition
 ### Request
 

@@ -49,6 +49,8 @@ class KARPClient(object):
                 )
             successful = True
         except Exception as e:
+            if req.response:
+                traceback.print_exc()
             response_data = e.__str__()
             successful = False
         if req.response:
@@ -110,21 +112,26 @@ class KARPClient(object):
         return asyncio.ensure_future(self._read())
 
     async def request(
-        self, route: str, request_data: str, timeout=None
-    ) -> Response:
+        self, route: str, request_data: str, timeout=None, response=True,
+    ) -> Optional[Response]:
         """
         Request something
         :param route:
         :param request_data:
         :param timeout: Timeout, None for infinite, raises TimeoutError on failure
+        :param response: wait for a response
         :return:
         """
-        req = Request.create(route, request_data)
+        req = Request.create(route, request_data, response)
 
         self.writer.write(req.to_bytes())
-        self._requests[req.request_id] = utils.PendingRequest()
+        if response:
+            self._requests[req.request_id] = utils.PendingRequest()
 
         await self.writer.drain()
+
+        if not response:
+            return
 
         try:
             response = await self._requests[req.request_id].process(

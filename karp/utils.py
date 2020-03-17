@@ -1,10 +1,17 @@
+"""
+Utils
+"""
 import asyncio
 from typing import Union, Optional
-from karp.response import Response, InvalidResponseException
+from karp.response import Response
 from karp.request import Request, InvalidRequestException
 
 
 class Utils:
+    """
+    Utils
+    """
+
     @staticmethod
     def create_interaction_object(
         unknown_object: str
